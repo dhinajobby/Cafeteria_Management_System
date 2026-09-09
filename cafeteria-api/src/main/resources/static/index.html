@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cafeteria Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --counter-dark: #241c16;
+    --counter-dark-2: #322619;
+    --ticket-paper: #fbf8f1;
+    --ticket-paper-shadow: #e8e0cf;
+    --spice-gold: #d9a441;
+    --spice-gold-dim: #a97e34;
+    --curry-green: #4c7a5e;
+    --chili-red: #b23a2e;
+    --ink: #241c16;
+    --ink-soft: #6b6156;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--counter-dark);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(217,164,65,0.06), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(76,122,94,0.08), transparent 45%);
+    font-family: 'Inter', sans-serif;
+    color: var(--ticket-paper);
+    display: flex;
+    justify-content: center;
+    padding: 32px 20px 80px;
+  }
+
+  .layout {
+    width: 100%;
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  header.masthead {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  header.masthead .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.35em;
+    font-size: 11px;
+    color: var(--spice-gold);
+    text-transform: uppercase;
+  }
+
+  header.masthead h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 7vw, 64px);
+    letter-spacing: 0.03em;
+    margin: 4px 0 0;
+    color: var(--ticket-paper);
+  }
+
+  /* ---------- Menu (left) ---------- */
+  .menu-panel h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--spice-gold);
+    margin: 0 0 14px 4px;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  button.item-btn {
+    all: unset;
+    cursor: pointer;
+    background: var(--counter-dark-2);
+    border: 1px solid rgba(217,164,65,0.25);
+    border-radius: 10px;
+    padding: 16px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  }
+  button.item-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--spice-gold);
+    background: #3a2c1c;
+  }
+  button.item-btn:active:not(:disabled) { transform: translateY(0px) scale(0.98); }
+  button.item-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  button.item-btn:focus-visible { outline: 2px solid var(--spice-gold); outline-offset: 2px; }
+
+  .item-btn .row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .item-btn .name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ticket-paper);
+  }
+  .item-btn .price {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--spice-gold);
+    font-size: 14px;
+  }
+  .item-btn .stock {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    color: #a89c8b;
+  }
+  .item-btn .add-hint {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--curry-green);
+    font-weight: 600;
+  }
+
+  /* ---------- Receipt (right) ---------- */
+  .receipt-wrap { position: sticky; top: 24px; }
+
+  .receipt {
+    background: var(--ticket-paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 26px 22px 22px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    position: relative;
+  }
+
+  /* torn / perforated bottom edge */
+  .receipt::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -9px;
+    height: 18px;
+    background:
+      radial-gradient(circle at 9px 0, transparent 9px, var(--ticket-paper) 9.5px) repeat-x;
+    background-size: 18px 18px;
+  }
+
+  .receipt h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.04em;
+    font-size: 26px;
+    margin: 0;
+  }
+  .receipt .order-id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin: 2px 0 14px;
+  }
+
+  .cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .cart-table thead th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 1px dashed var(--ticket-paper-shadow);
+    padding-bottom: 6px;
+  }
+  .cart-table thead th:last-child, .cart-table tbody td:last-child { text-align: right; }
+  .cart-table tbody td {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--ticket-paper-shadow);
+    vertical-align: top;
+  }
+  .cart-table tbody tr { animation: printIn 0.22s ease-out; }
+  @keyframes printIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .remove-btn {
+    all: unset;
+    cursor: pointer;
+    color: var(--chili-red);
+    font-size: 11px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .empty-row td {
+    padding: 20px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-style: normal;
+    border-bottom: none;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 2px solid var(--ink);
+  }
+  .total-row .label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.03em;
+  }
+  .total-row .amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .payment-select {
+    width: 100%;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 9px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--ticket-paper-shadow);
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .checkout-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 12px;
+    background: var(--curry-green);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: filter 0.12s ease;
+  }
+  .checkout-btn:hover:not(:disabled) { filter: brightness(1.08); }
+  .checkout-btn:disabled { background: #b8b0a2; cursor: not-allowed; }
+
+  .status-banner {
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  .status-banner.success { background: rgba(76,122,94,0.15); color: var(--curry-green); }
+  .status-banner.error { background: rgba(178,58,46,0.12); color: var(--chili-red); }
+
+  .new-order-btn {
+    all: unset;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <header class="masthead">
+    <div class="eyebrow">Order at the counter</div>
+    <h1>Cafeteria</h1>
+  </header>
+
+  <section class="menu-panel">
+    <h2>Today's Menu — tap to add</h2>
+    <div id="menuGrid" class="menu-grid"></div>
+  </section>
+
+  <section class="receipt-wrap">
+    <div class="receipt">
+      <h2>Order Ticket</h2>
+      <div class="order-id" id="orderIdLabel">order # —</div>
+
+      <table class="cart-table">
+        <thead>
+          <tr><th>Item</th><th>Qty</th><th>Amt</th></tr>
+        </thead>
+        <tbody id="cartBody">
+          <tr class="empty-row"><td colspan="3">Nothing added yet</td></tr>
+        </tbody>
+      </table>
+
+      <div class="total-row">
+        <span class="label">Total</span>
+        <span class="amount" id="totalAmount">₹0.00</span>
+      </div>
+
+      <select id="paymentMethod" class="payment-select">
+        <option>CASH ON DELIVERY</option>
+        <option>CARD</option>
+        <option>UPI</option>
+      </select>
+
+      <button id="checkoutBtn" class="checkout-btn" disabled>Checkout</button>
+      <button id="cancelOrderBtn" class="new-order-btn" style="color: var(--chili-red);">Cancel order</button>
+      <button id="newOrderBtn" class="new-order-btn" style="display:none;">Start a new order</button>
+
+      <div id="statusBanner"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const API = '/api';
+  let currentOrder = null;
+
+  const menuGrid = document.getElementById('menuGrid');
+  const cartBody = document.getElementById('cartBody');
+  const totalAmount = document.getElementById('totalAmount');
+  const orderIdLabel = document.getElementById('orderIdLabel');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const newOrderBtn = document.getElementById('newOrderBtn');
+  const statusBanner = document.getElementById('statusBanner');
+  const paymentMethod = document.getElementById('paymentMethod');
+
+  const money = (n) => '₹' + Number(n).toFixed(2);
+
+  async function init() {
+    statusBanner.innerHTML = '';
+    checkoutBtn.disabled = true;
+    newOrderBtn.style.display = 'none';
+    paymentMethod.disabled = false;
+
+    const [items, order] = await Promise.all([
+      fetchJson(`${API}/food-items`),
+      fetchJson(`${API}/orders`, { method: 'POST' })
+    ]);
+
+    currentOrder = order;
+    renderMenu(items);
+    renderOrder(order);
+  }
+
+  async function fetchJson(url, opts) {
+    const res = await fetch(url, opts && { ...opts, headers: { 'Content-Type': 'application/json' } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Request failed');
+    return data;
+  }
+
+  function renderMenu(items) {
+    menuGrid.innerHTML = '';
+    items.forEach((item) => {
+      const btn = document.createElement('button');
+      btn.className = 'item-btn';
+      btn.disabled = !item.isAvailable || item.stockCount <= 0;
+      btn.innerHTML = `
+        <div class="row-top">
+          <span class="name">${item.itemName}</span>
+          <span class="price">${money(item.price)}</span>
+        </div>
+        <div class="stock">${item.stockCount > 0 ? item.stockCount + ' left' : 'sold out'}</div>
+        <div class="add-hint">+ add to order</div>
+      `;
+      btn.addEventListener('click', () => addItem(item.itemId));
+      menuGrid.appendChild(btn);
+    });
+  }
+
+  async function addItem(itemId) {
+    try {
+      const order = await fetchJson(`${API}/orders/${currentOrder.orderId}/items`, {
+        method: 'POST',
+        body: JSON.stringify({ itemId, quantity: 1 })
+      });
+      currentOrder = order;
+      renderOrder(order);
+      const items = await fetchJson(`${API}/food-items`);
+      renderMenu(items);
+    } catch (e) {
+      showStatus(e.message, 'error');
+    }
+  }
+
+  async function removeItem(orderItemId) {
+    try {
+      const order = await fetchJson(`${API}/orders/${currentOrder.orderId}/items/${orderItemId}`, { method: 'DELETE' });
+      currentOrder = order;
+      renderOrder(order);
+      const items = await fetchJson(`${API}/food-items`);
+      renderMenu(items);
+    } catch (e) {
+      showStatus(e.message, 'error');
+    }
+  }
+
+  function renderOrder(order) {
+    orderIdLabel.textContent = `order # ${order.orderId}`;
+    totalAmount.textContent = money(order.totalBill);
+    checkoutBtn.disabled = order.orderItems.length === 0;
+
+    cartBody.innerHTML = '';
+    if (order.orderItems.length === 0) {
+      cartBody.innerHTML = '<tr class="empty-row"><td colspan="3">Nothing added yet</td></tr>';
+      return;
+    }
+
+    order.orderItems.forEach((line) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${line.foodItem.itemName}<br><button class="remove-btn">remove</button></td>
+        <td>${line.quantity}</td>
+        <td>${money(line.subtotal)}</td>
+      `;
+      tr.querySelector('.remove-btn').addEventListener('click', () => removeItem(line.orderItemId));
+      cartBody.appendChild(tr);
+    });
+  }
+
+  checkoutBtn.addEventListener('click', async () => {
+    try {
+      const order = await fetchJson(`${API}/orders/${currentOrder.orderId}/checkout`, {
+        method: 'PUT',
+        body: JSON.stringify({ paymentMethod: paymentMethod.value })
+      });
+      currentOrder = order;
+      checkoutBtn.disabled = true;
+      paymentMethod.disabled = true;
+      newOrderBtn.style.display = 'block';
+      document.querySelectorAll('.item-btn').forEach(b => b.disabled = true);
+      document.querySelectorAll('.remove-btn').forEach(b => b.style.display = 'none');
+      showStatus(`Order #${order.orderId} placed — ${money(order.totalBill)} via ${order.paymentMethod}`, 'success');
+    } catch (e) {
+      showStatus(e.message, 'error');
+    }
+  });
+
+  document.getElementById('cancelOrderBtn').addEventListener('click', async () => {
+    if (!currentOrder || currentOrder.orderItems.length === 0) { init(); return; }
+    try {
+      await fetchJson(`${API}/orders/${currentOrder.orderId}`, { method: 'DELETE' });
+      showStatus('Order cancelled — stock restored', 'success');
+      setTimeout(init, 900);
+    } catch (e) {
+      showStatus(e.message, 'error');
+    }
+  });
+
+  newOrderBtn.addEventListener('click', init);
+
+  function showStatus(message, kind) {
+    statusBanner.innerHTML = `<div class="status-banner ${kind}">${message}</div>`;
+  }
+
+  init();
+</script>
+</body>
+</html>
