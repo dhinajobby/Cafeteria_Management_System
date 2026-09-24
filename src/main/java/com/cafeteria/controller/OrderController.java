@@ -1,0 +1,3 @@
+package com.cafeteria.controller;
+import com.cafeteria.dto.request.PlaceOrderRequest; import com.cafeteria.dto.response.OrderResponse; import com.cafeteria.service.OrderService; import org.springframework.http.*; import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/orders") public class OrderController{private final OrderService s;public OrderController(OrderService s){this.s=s;}@PostMapping public ResponseEntity<OrderResponse> place(@RequestBody PlaceOrderRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(s.placeOrder(r));}@GetMapping("/{id}")public OrderResponse get(@PathVariable Long id){return s.getOrderById(id);}}

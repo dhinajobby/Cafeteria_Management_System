@@ -1,0 +1,113 @@
+/* ==========================================================================
+   ANNAPURNA™ CAFETERIA - THERMAL & RECEIPT PRINT STYLESHEET
+   Optimized for 80mm receipt printers and standard paper sizes.
+   ========================================================================== */
+
+@media print {
+  /* Hide non-printable UI elements */
+  #particle-canvas,
+  .btn-cancel-billing,
+  .billing-actions,
+  .category-filter-bar,
+  .floating-cart-btn,
+  .menu-header,
+  header,
+  footer,
+  nav,
+  button {
+    display: none !important;
+  }
+
+  body, html {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page-wrapper {
+    min-height: auto !important;
+    display: block !important;
+  }
+
+  .billing-wrapper {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+  }
+
+  .billing-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .bill-receipt-header {
+    border-bottom: 1px dashed #000000 !important;
+    padding-bottom: 5mm !important;
+    margin-bottom: 5mm !important;
+  }
+
+  .receipt-cafe-title {
+    font-size: 18pt !important;
+    color: #000000 !important;
+    text-align: center;
+  }
+
+  .receipt-meta {
+    font-size: 9pt !important;
+    color: #333333 !important;
+  }
+
+  /* Table strictly maintains invisible lines */
+  .billing-table {
+    width: 100% !important;
+    border: none !important;
+    border-collapse: collapse !important;
+    margin: 5mm 0 !important;
+  }
+
+  .billing-table th,
+  .billing-table td {
+    border: none !important;
+    padding: 3mm 2mm !important;
+    color: #000000 !important;
+    background-color: transparent !important;
+  }
+
+  .billing-table th {
+    border-bottom: 1px dashed #000000 !important;
+    font-size: 9pt !important;
+  }
+
+  .billing-table td {
+    font-size: 10pt !important;
+  }
+
+  .bill-summary-section {
+    border-top: 1px dashed #000000 !important;
+    padding-top: 4mm !important;
+    margin-top: 4mm !important;
+  }
+
+  .summary-row.grand-total {
+    border-top: 1px solid #000000 !important;
+    font-size: 13pt !important;
+    font-weight: bold !important;
+  }
+
+  .print-receipt-footer {
+    display: block !important;
+    margin-top: 8mm;
+    text-align: center;
+    font-size: 8pt;
+    border-top: 1px dashed #666;
+    padding-top: 4mm;
+  }
+}
+
+.print-receipt-footer {
+  display: none;
+}

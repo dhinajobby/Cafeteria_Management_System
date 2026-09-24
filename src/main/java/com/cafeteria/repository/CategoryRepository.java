@@ -1,0 +1,3 @@
+package com.cafeteria.repository;
+import com.cafeteria.entity.Category; import org.springframework.data.jpa.repository.JpaRepository; import java.util.List;
+public interface CategoryRepository extends JpaRepository<Category,Long>{ List<Category> findByIsActiveTrueOrderByDisplayOrderAsc(); }

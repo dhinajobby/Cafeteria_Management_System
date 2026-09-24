@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annapurna&trade; - Order Receipt &amp; Billing</title>
+  <meta name="description" content="View items added, quantities, unit prices, subtotal, and print order bill.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <div class="billing-wrapper">
+      
+      <!-- Top Navigation Bar -->
+      <div class="billing-header-bar">
+        <a href="menu.html" class="btn-cancel-billing" aria-label="Modify items in menu">
+          <span>&larr;</span>
+          <span>Add More Items</span>
+        </a>
+        <button id="cancel-order-billing-btn" class="btn-cancel-menu" aria-label="Clear cart and return to home">
+          <span>&#x2715;</span>
+          <span>Cancel Order</span>
+        </button>
+      </div>
+
+      <!-- Bill Receipt Card -->
+      <main class="billing-card" id="billing-card" role="main">
+        
+        <!-- Receipt Header -->
+        <div class="bill-receipt-header">
+          <h1 class="receipt-cafe-title">ANNAPURNA<sup>&trade;</sup></h1>
+          <p style="font-size: 0.95rem; color: var(--c-mocha); font-weight: 600; margin-top: 0.2rem;">
+            Campus Cafeteria Touch Kiosk
+          </p>
+          <div class="receipt-meta">
+            <span id="receipt-date">Date: --</span>
+            <span id="receipt-time">Time: --</span>
+          </div>
+        </div>
+
+        <!-- Invisible Lines Table Container -->
+        <div id="bill-content-container">
+          <table class="billing-table" aria-label="Selected food items billing table">
+            <thead>
+              <tr>
+                <th class="col-item">Item Name</th>
+                <th class="col-qty">Quantity</th>
+                <th class="col-price">Unit Price</th>
+                <th class="col-subtotal">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="billing-items-body">
+              <!-- Dynamically populated bill rows -->
+            </tbody>
+          </table>
+
+          <!-- Bill Summary Section -->
+          <div class="bill-summary-section">
+            <div class="summary-row">
+              <span>Items Total Count</span>
+              <span id="bill-total-count" style="font-weight: 700;">0</span>
+            </div>
+            <div class="summary-row">
+              <span>Cafeteria Service Tax</span>
+              <span>₹0 (Included)</span>
+            </div>
+            <div class="summary-row grand-total">
+              <span>Total Price of Your Order</span>
+              <span class="grand-total-amount" id="bill-grand-total">₹0</span>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="billing-actions">
+            <button class="btn-print-bill" id="btn-print-proceed" aria-label="Print order bill and complete checkout">
+              <span>Print Bill</span>
+              <span style="font-size: 1.3rem;">🖨️</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty Bill Placeholder -->
+        <div class="empty-bill-state" id="empty-bill-view" style="display: none;">
+          <p>Your cart is empty. Please select food items from the menu.</p>
+          <a href="menu.html" class="btn-ready-order" style="display: inline-flex;">
+            <span>Go to Menu</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+
+        <!-- Thermal Print Only Receipt Footer -->
+        <div class="print-receipt-footer">
+          <p>*** THANK YOU FOR ORDERING ***</p>
+          <p>Please present your token at the cafeteria counter to collect your order.</p>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tbody = document.getElementById('billing-items-body');
+      const totalCountEl = document.getElementById('bill-total-count');
+      const grandTotalEl = document.getElementById('bill-grand-total');
+      const printBtn = document.getElementById('btn-print-proceed');
+      const cancelBtn = document.getElementById('cancel-order-billing-btn');
+      const billContainer = document.getElementById('bill-content-container');
+      const emptyView = document.getElementById('empty-bill-view');
+
+      // Set live date and time
+      const now = new Date();
+      document.getElementById('receipt-date').textContent = 'Date: ' + now.toLocaleDateString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric'
+      });
+      document.getElementById('receipt-time').textContent = 'Time: ' + now.toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit', hour12: true
+      });
+
+      function renderBill() {
+        const summary = CartManager.getCartSummary();
+
+        if (summary.totalItems === 0) {
+          billContainer.style.display = 'none';
+          emptyView.style.display = 'block';
+          return;
+        }
+
+        billContainer.style.display = 'block';
+        emptyView.style.display = 'none';
+        tbody.innerHTML = '';
+
+        summary.items.forEach(line => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="col-item">${line.name}</td>
+            <td class="col-qty">${line.quantity}</td>
+            <td class="col-price">₹${line.unitPrice}</td>
+            <td class="col-subtotal">₹${line.subtotal}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        totalCountEl.textContent = summary.totalItems;
+        grandTotalEl.textContent = '₹' + summary.totalPrice;
+      }
+
+      // Cancel button
+      cancelBtn.addEventListener('click', () => {
+        const confirmCancel = confirm("Are you sure you want to cancel this order? All items will be removed.");
+        if (!confirmCancel) return;
+        CartManager.clearCart();
+        window.location.href = 'index.html';
+      });
+
+      // 3. PRINT BUTTON: PRINTS THE BILL, CLEARS CART/DEDUCTS STOCK, AND FOLLOWS TO NEXT PAGE
+      printBtn.addEventListener('click', async () => {
+        printBtn.disabled = true;
+        printBtn.style.opacity = '0.7';
+
+        // 1. Process checkout (generates order token, deducts stock, dispatches to Java backend)
+        const orderResult = await CartManager.checkoutOrder();
+        if (!orderResult.success) {
+          alert(orderResult.message || 'Could not process order.');
+          printBtn.disabled = false;
+          printBtn.style.opacity = '1';
+          return;
+        }
+
+        // 2. Trigger browser print dialog for the thermal bill
+        window.print();
+
+        // 3. Immediately transition to Page 4: thankyou.html
+        window.location.href = 'thankyou.html';
+      });
+
+      renderBill();
+    });
+  </script>
+</body>
+</html>

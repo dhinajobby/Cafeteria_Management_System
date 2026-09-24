@@ -1,0 +1,3 @@
+package com.cafeteria.security;
+import com.cafeteria.entity.User; import com.cafeteria.repository.UserRepository; import org.springframework.security.core.userdetails.*; import org.springframework.stereotype.Service;
+@Service public class DatabaseUserDetailsService implements UserDetailsService{private final UserRepository repo;public DatabaseUserDetailsService(UserRepository r){repo=r;}public UserDetails loadUserByUsername(String username)throws UsernameNotFoundException{User u=repo.findByEmailAndIsActiveTrue(username.trim().toLowerCase()).orElseThrow(()->new UsernameNotFoundException("User not found"));return org.springframework.security.core.userdetails.User.withUsername(u.getEmail()).password(u.getPasswordHash()).roles(u.getRole().name()).build();}}

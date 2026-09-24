@@ -1,0 +1,3 @@
+package com.cafeteria.config;
+import org.springframework.context.annotation.Configuration;
+@Configuration public class WebConfig { }

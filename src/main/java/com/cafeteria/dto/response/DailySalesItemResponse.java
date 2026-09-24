@@ -1,0 +1,1 @@
+package com.cafeteria.dto.response; import java.math.BigDecimal; public record DailySalesItemResponse(Long itemId,String itemName,Long soldCount,BigDecimal soldAmount,Integer leftoverCount,BigDecimal leftoverValue){}

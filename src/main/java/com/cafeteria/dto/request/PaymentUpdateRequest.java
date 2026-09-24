@@ -1,0 +1,1 @@
+package com.cafeteria.dto.request; import com.cafeteria.entity.enums.PaymentMethod; import com.cafeteria.entity.enums.PaymentStatus; public record PaymentUpdateRequest(PaymentStatus status,PaymentMethod method){}

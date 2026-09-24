@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annapurna&trade; - Admin Menu Management Dashboard</title>
+  <meta name="description" content="Manage food items, pricing, inventory stock counts, and cafeteria menu catalog.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-body">
+
+  <div class="page-wrapper">
+    <!-- Admin Top Header Navigation -->
+    <header class="admin-header">
+      <div class="admin-header-left">
+        <span class="brand-badge">ANNAPURNA</span>
+        <span class="admin-badge-pill">Menu Manager</span>
+      </div>
+
+      <div class="admin-header-right">
+        <!-- Preview live customer touch kiosk -->
+        <a href="menu.html" class="btn-preview-kiosk" title="View customer kiosk interface">
+          <span>👁️</span>
+          <span>View Live Kiosk Menu</span>
+        </a>
+
+        <!-- Logout button -->
+        <button id="admin-logout-btn" class="btn-admin-logout" title="Sign out from admin panel">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="admin-main">
+      <div class="admin-container">
+
+        <!-- Metrics Overview Cards -->
+        <section class="admin-metrics-grid" aria-label="Catalog Statistics">
+          <div class="metric-card">
+            <div class="metric-icon">📋</div>
+            <div class="metric-info">
+              <span class="metric-label">Total Catalog Items</span>
+              <span class="metric-val" id="metric-total-items">0</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon" style="background: rgba(45, 106, 79, 0.15); color: var(--c-success);">✅</div>
+            <div class="metric-info">
+              <span class="metric-label">Active / In Stock</span>
+              <span class="metric-val" id="metric-in-stock">0</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon" style="background: rgba(158, 42, 43, 0.15); color: var(--c-danger);">⚠️</div>
+            <div class="metric-info">
+              <span class="metric-label">Out of Stock (Hidden)</span>
+              <span class="metric-val" id="metric-out-stock">0</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">☕</div>
+            <div class="metric-info">
+              <span class="metric-label">Categories</span>
+              <span class="metric-val">4 Active</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Management Action Bar -->
+        <section class="admin-action-bar">
+          <div class="admin-action-left">
+            <!-- Add New Food Item Button -->
+            <button id="btn-open-add-modal" class="btn-add-food-item">
+              <span>+</span>
+              <span>Add New Food Item</span>
+            </button>
+
+            <!-- Reset to Defaults Helper -->
+            <button id="btn-reset-menu" class="btn-secondary-action" title="Reset catalog to standard sample inventory">
+              <span>↺</span>
+              <span>Reset Defaults</span>
+            </button>
+          </div>
+
+          <div class="admin-action-right">
+            <!-- Real-time Search Box -->
+            <div class="admin-search-box">
+              <span>🔍</span>
+              <input type="text" id="admin-search-input" placeholder="Search by food name or badge..." aria-label="Search menu items">
+            </div>
+          </div>
+        </section>
+
+        <!-- Category Filter Tabs -->
+        <nav class="category-filter-bar admin-filter-bar" aria-label="Filter by category">
+          <button class="filter-tab active" data-category="all">✨ All Items</button>
+          <button class="filter-tab" data-category="hot-brews">☕ Hot Brews</button>
+          <button class="filter-tab" data-category="cold-sips">🥤 Cold Sips</button>
+          <button class="filter-tab" data-category="bakery">🥐 Bakery &amp; Treats</button>
+          <button class="filter-tab" data-category="quick-meals">🥪 Quick Meals</button>
+        </nav>
+
+        <!-- Menu Management Items Table -->
+        <section class="admin-table-container">
+          <table class="admin-table" aria-label="Food Items Management Table">
+            <thead>
+              <tr>
+                <th style="width: 75px;">Photo</th>
+                <th>Food Item Name &amp; Description</th>
+                <th>Category</th>
+                <th>Price (₹)</th>
+                <th>Available Stock</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-items-tbody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ADD / EDIT FOOD ITEM MODAL -->
+  <div class="modal-overlay" id="food-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Add New Food Item</h2>
+        <button class="btn-close-modal" id="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+
+      <form id="food-item-form" class="modal-form" novalidate>
+        <input type="hidden" id="form-item-id">
+
+        <div class="form-grid-2">
+          <!-- Food Name -->
+          <div class="form-group">
+            <label for="form-item-name" class="form-label">Food Item Name *</label>
+            <input type="text" id="form-item-name" class="form-input" placeholder="e.g. Vanilla Cold Foam Cold Brew" required>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label for="form-item-category" class="form-label">Category *</label>
+            <select id="form-item-category" class="form-select" required>
+              <option value="hot-brews">☕ Hot Brews</option>
+              <option value="cold-sips">🥤 Cold Sips</option>
+              <option value="bakery">🥐 Bakery &amp; Treats</option>
+              <option value="quick-meals">🥪 Quick Meals</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <!-- Price -->
+          <div class="form-group">
+            <label for="form-item-price" class="form-label">Price (₹) *</label>
+            <input type="number" id="form-item-price" class="form-input" min="1" step="1" placeholder="e.g. 95" required>
+          </div>
+
+          <!-- Available Count -->
+          <div class="form-group">
+            <label for="form-item-stock" class="form-label">Available Stock Count *</label>
+            <input type="number" id="form-item-stock" class="form-input" min="0" step="1" placeholder="e.g. 20" required>
+            <small class="form-hint">Set to 0 to hide from customer kiosk</small>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <!-- Special Badge -->
+          <div class="form-group">
+            <label for="form-item-badge" class="form-label">Badge Tag (Optional)</label>
+            <input type="text" id="form-item-badge" class="form-input" placeholder="e.g. Bestseller, Chef Pick, Vegan">
+          </div>
+
+          <!-- Image URL -->
+          <div class="form-group">
+            <label for="form-item-image" class="form-label">Food Image URL</label>
+            <input type="url" id="form-item-image" class="form-input" placeholder="https://images.unsplash.com/..." required>
+          </div>
+        </div>
+
+        <!-- Image Presets for Fast Adding -->
+        <div class="image-presets-section">
+          <span class="presets-label">Quick Image Presets:</span>
+          <div class="presets-btn-bar">
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=600&q=80">☕ Espresso</button>
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=600&q=80">🥛 Cappuccino</button>
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80">🧊 Cold Brew</button>
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80">🥐 Croissant</button>
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?auto=format&fit=crop&w=600&q=80">🧁 Muffin</button>
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80">🥪 Sandwich</button>
+            <button type="button" class="btn-preset" data-url="https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80">🌯 Roll / Wrap</button>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="form-item-desc" class="form-label">Description</label>
+          <textarea id="form-item-desc" class="form-textarea" rows="2" placeholder="Brief description of flavors, ingredients, and preparation..."></textarea>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary-action" id="btn-cancel-modal">Cancel</button>
+          <button type="submit" class="btn-ready-order" style="padding: 0.75rem 2rem; font-size: 1rem;">
+            <span>Save Food Item</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/auth.js"></script>
+  <script src="js/data.js"></script>
+  <script>
+    // Enforce Admin Authentication
+    AuthManager.requireAdmin();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const tbody = document.getElementById('admin-items-tbody');
+      const searchInput = document.getElementById('admin-search-input');
+      const filterTabs = document.querySelectorAll('.admin-filter-bar .filter-tab');
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      const resetBtn = document.getElementById('btn-reset-menu');
+
+      // Modal elements
+      const modal = document.getElementById('food-modal');
+      const openAddBtn = document.getElementById('btn-open-add-modal');
+      const closeModalBtn = document.getElementById('btn-close-modal');
+      const cancelModalBtn = document.getElementById('btn-cancel-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const foodForm = document.getElementById('food-item-form');
+      const itemIdInput = document.getElementById('form-item-id');
+      const itemNameInput = document.getElementById('form-item-name');
+      const itemCatInput = document.getElementById('form-item-category');
+      const itemPriceInput = document.getElementById('form-item-price');
+      const itemStockInput = document.getElementById('form-item-stock');
+      const itemBadgeInput = document.getElementById('form-item-badge');
+      const itemImageInput = document.getElementById('form-item-image');
+      const itemDescInput = document.getElementById('form-item-desc');
+      const presetButtons = document.querySelectorAll('.btn-preset');
+
+      // Metric elements
+      const metricTotal = document.getElementById('metric-total-items');
+      const metricInStock = document.getElementById('metric-in-stock');
+      const metricOutStock = document.getElementById('metric-out-stock');
+
+      let currentCategory = 'all';
+      let searchQuery = '';
+
+      // Logout
+      logoutBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to log out from the admin control panel?')) {
+          AuthManager.logout();
+        }
+      });
+
+      // Quick Image Preset click handler
+      presetButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          itemImageInput.value = btn.dataset.url;
+        });
+      });
+
+      // Reset Catalog to defaults
+      resetBtn.addEventListener('click', () => {
+        if (confirm('Reset cafeteria menu to default sample inventory? Any custom items added will be replaced.')) {
+          resetMenuToDefaults();
+          renderAdminTable();
+        }
+      });
+
+      // Render Admin Table and Metrics
+      function renderAdminTable() {
+        const allItems = getMenuItems();
+
+        // Update top metrics
+        const inStockCount = allItems.filter(i => i.availableCount > 0).length;
+        const outStockCount = allItems.filter(i => i.availableCount <= 0).length;
+        metricTotal.textContent = allItems.length;
+        metricInStock.textContent = inStockCount;
+        metricOutStock.textContent = outStockCount;
+
+        // Filter items
+        const filtered = allItems.filter(item => {
+          const matchCat = currentCategory === 'all' || item.category === currentCategory;
+          const matchSearch = !searchQuery || 
+            item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            (item.badge && item.badge.toLowerCase().includes(searchQuery.toLowerCase()));
+          return matchCat && matchSearch;
+        });
+
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--c-roast);">
+                <p style="font-weight: 600; font-size: 1.1rem;">No matching food items found.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Click "+ Add New Food Item" to create one.</p>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        filtered.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.id = `row-${item.id}`;
+
+          const isOutOfStock = item.availableCount <= 0;
+          const isLowStock = item.availableCount > 0 && item.availableCount <= 5;
+
+          const statusBadge = isOutOfStock
+            ? '<span class="status-pill-badge out-stock">⚠️ Out of Stock (Hidden)</span>'
+            : (isLowStock 
+              ? '<span class="status-pill-badge low-stock">Low Stock</span>' 
+              : '<span class="status-pill-badge in-stock">✓ Available</span>');
+
+          const categoryNames = {
+            'hot-brews': '☕ Hot Brews',
+            'cold-sips': '🥤 Cold Sips',
+            'bakery': '🥐 Bakery &amp; Treats',
+            'quick-meals': '🥪 Quick Meals'
+          };
+
+          tr.innerHTML = `
+            <td>
+              <img src="${item.image}" alt="${item.name}" class="admin-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=150&q=80'">
+            </td>
+            <td>
+              <div class="admin-item-title-wrap">
+                <span class="admin-item-name">${item.name}</span>
+                ${item.badge ? `<span class="food-badge" style="position: static; font-size: 0.65rem;">${item.badge}</span>` : ''}
+              </div>
+              <p class="admin-item-desc">${item.description || ''}</p>
+            </td>
+            <td>
+              <span class="category-tag">${categoryNames[item.category] || item.category}</span>
+            </td>
+            <td class="admin-price-cell">
+              ₹${item.price}
+            </td>
+            <td>
+              <div class="admin-stock-adjuster">
+                <button class="stock-btn" onclick="handleStockAdjust('${item.id}', -1)" title="Decrease stock">−</button>
+                <span class="stock-display ${isOutOfStock ? 'zero' : ''}">${item.availableCount}</span>
+                <button class="stock-btn" onclick="handleStockAdjust('${item.id}', 1)" title="Increase stock">+</button>
+              </div>
+            </td>
+            <td>
+              ${statusBadge}
+            </td>
+            <td style="text-align: right;">
+              <div class="admin-row-actions">
+                <button class="btn-edit-item" onclick="handleOpenEditModal('${item.id}')" title="Edit details &amp; price">
+                  ✏️ Edit
+                </button>
+                <button class="btn-delete-item" onclick="handleDeleteItem('${item.id}')" title="Delete food item">
+                  🗑️ Delete
+                </button>
+              </div>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Quick stock increment/decrement
+      window.handleStockAdjust = (id, delta) => {
+        const item = getMenuItemById(id);
+        if (item) {
+          const newStock = Math.max(0, item.availableCount + delta);
+          updateItemStock(id, newStock);
+          renderAdminTable();
+        }
+      };
+
+      // Delete item
+      window.handleDeleteItem =  async (id) => {
+        const item = getMenuItemById(id);
+        if (!item) return;
+
+        const confirmDelete = confirm(`Are you sure you want to permanently delete "${item.name}" from the menu?`);
+        if (!confirmDelete) return;
+
+        await deleteMenuItem(id);
+        renderAdminTable();
+      };
+
+      // Open Edit Modal
+      window.handleOpenEditModal = (id) => {
+        const item = getMenuItemById(id);
+        if (!item) return;
+
+        modalTitle.textContent = `Edit Food Item: ${item.name}`;
+        itemIdInput.value = item.id;
+        itemNameInput.value = item.name;
+        itemCatInput.value = item.category;
+        itemPriceInput.value = item.price;
+        itemStockInput.value = item.availableCount;
+        itemBadgeInput.value = item.badge || '';
+        itemImageInput.value = item.image;
+        itemDescInput.value = item.description || '';
+
+        openModal();
+      };
+
+      // Open Add Modal
+      openAddBtn.addEventListener('click', () => {
+        modalTitle.textContent = 'Add New Food Item';
+        foodForm.reset();
+        itemIdInput.value = '';
+        itemStockInput.value = 15;
+        itemImageInput.value = 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=600&q=80';
+        openModal();
+      });
+
+      function openModal() {
+        modal.classList.add('active');
+        itemNameInput.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove('active');
+      }
+
+      closeModalBtn.addEventListener('click', closeModal);
+      cancelModalBtn.addEventListener('click', closeModal);
+
+      // Close modal on outside click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      // Save Food Item Form (Add or Edit)
+      foodForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = itemNameInput.value.trim();
+        const category = itemCatInput.value;
+        const price = Number(itemPriceInput.value);
+        const stock = Number(itemStockInput.value);
+        const badge = itemBadgeInput.value.trim();
+        const image = itemImageInput.value.trim();
+        const description = itemDescInput.value.trim();
+        const editingId = itemIdInput.value;
+        const categoryMap = {
+    "hot-brews": 1,
+    "cold-sips": 2,
+    "bakery": 3,
+    "quick-meals": 4
+};
+
+const categoryId = categoryMap[category];
+
+        if (!name) {
+          alert('Please enter a food item name.');
+          return;
+        }
+
+        if (isNaN(price) || price < 1) {
+          alert('Please enter a valid price (minimum ₹1).');
+          return;
+        }
+
+        if (isNaN(stock) || stock < 0) {
+          alert('Please enter a valid available stock count (0 or greater).');
+          return;
+        }
+
+        if (editingId) {
+          // Update existing item
+          updateMenuItem(editingId, {
+            name,
+            category,
+            price,
+            availableCount: stock,
+            badge: badge || null,
+            image,
+            description
+          });
+        } else {
+          // Add new item
+          await addMenuItem({
+    name,
+    category,
+    categoryId,
+    price,
+    availableCount: stock,
+    badge: badge || null,
+    image,
+    description
+});
+        }
+
+       await fetchMenuFromJavaBackend();
+closeModal();
+renderAdminTable();
+      });
+
+      // Search bar
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.trim();
+        renderAdminTable();
+      });
+
+      // Category filter tabs
+      filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          filterTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentCategory = tab.dataset.category;
+          renderAdminTable();
+        });
+      });
+
+      // Initial render
+      fetchMenuFromJavaBackend().then(() => {
+    renderAdminTable();
+});
+    });
+  </script>
+</body>
+</html>

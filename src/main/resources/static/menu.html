@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annapurna&trade; - Kiosk Menu</title>
+  <meta name="description" content="Select freshly prepared cafeteria meals, coffees, and snacks from the Annapurna vending touch kiosk.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <!-- Kiosk Top Header Bar -->
+    <header class="menu-header">
+      <!-- Page 2 Cancel Button (Deletes user entries & returns to Welcome Page) -->
+      <button id="cancel-order-btn" class="btn-cancel-menu" aria-label="Cancel order and return to welcome page">
+        <span aria-hidden="true">&#x2715;</span>
+        <span>Cancel</span>
+      </button>
+
+      <!-- Center Trademark Header -->
+      <div class="menu-header-brand">
+        <span class="brand-badge">ANNAPURNA</span>
+      </div>
+
+      <!-- Kiosk Status indicator & Admin shortcut if logged in -->
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <a href="admin.html" id="admin-return-kiosk-btn" class="btn-top-admin-login" style="display: none; padding: 0.35rem 0.85rem; font-size: 0.8rem;" title="Return to Admin Panel">
+          <span>👑</span>
+          <span>Admin</span>
+        </a>
+        <div class="header-status-badge">
+          <span class="status-dot"></span>
+          <span id="kiosk-status-text">Touch Kiosk Live</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Category Filter Bar for Quick Touch Navigation -->
+    <nav class="category-filter-bar" aria-label="Food Categories">
+      <button class="filter-tab active" data-category="all">
+        <span>✨ All Foods</span>
+      </button>
+      <button class="filter-tab" data-category="hot-brews">
+        <span>☕ Hot Brews</span>
+      </button>
+      <button class="filter-tab" data-category="cold-sips">
+        <span>🥤 Cold Sips</span>
+      </button>
+      <button class="filter-tab" data-category="bakery">
+        <span>🥐 Bakery &amp; Treats</span>
+      </button>
+      <button class="filter-tab" data-category="quick-meals">
+        <span>🍽️ Meals</span>
+      </button>
+    </nav>
+
+    <!-- Main Vending Machine Display Grid -->
+    <main class="menu-main-content">
+      <div class="vending-grid" id="vending-grid" role="region" aria-label="Available Foods List">
+        <!-- Dynamically rendered available foods -->
+      </div>
+    </main>
+
+    <!-- Bottom Right Floating "Your cart 🛒" Button (Leads to Billing Page) -->
+    <a href="billing.html" class="floating-cart-btn" id="floating-cart-btn" aria-label="View your cart and proceed to billing">
+      <div class="cart-icon-wrapper">
+        <span role="img" aria-label="Shopping Cart">🛒</span>
+        <span class="cart-count-badge" id="cart-item-count">0</span>
+      </div>
+      <span class="cart-btn-text">Your cart</span>
+      <span class="cart-btn-price" id="cart-total-price">₹0</span>
+    </a>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/auth.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // If admin is logged in, show admin return button in header
+      if (typeof AuthManager !== 'undefined' && AuthManager.isLoggedIn()) {
+        const adminBtn = document.getElementById('admin-return-kiosk-btn');
+        if (adminBtn) adminBtn.style.display = 'inline-flex';
+      }
+
+      const grid = document.getElementById('vending-grid');
+      const cartCountEl = document.getElementById('cart-item-count');
+      const cartPriceEl = document.getElementById('cart-total-price');
+      const filterTabs = document.querySelectorAll('.filter-tab');
+      const cancelBtn = document.getElementById('cancel-order-btn');
+
+      let currentCategory = 'all';
+
+      // 1. CANCEL BUTTON ON PAGE 2: DELETES USER ENTRIES & RETURNS TO WELCOME PAGE
+      cancelBtn.addEventListener('click', () => {
+        const summary = CartManager.getCartSummary();
+        if (summary.totalItems > 0) {
+          const confirmCancel = confirm("Are you sure you want to cancel your order? All cart selections will be cleared.");
+          if (!confirmCancel) return;
+        }
+        // Delete all user entries from storage
+        CartManager.clearCart();
+        // Redirect to Welcome Page (index.html)
+        window.location.href = 'index.html';
+      });
+
+      // 2. RENDER VENDING MACHINE GRID (Hides unavailable foods with availableCount <= 0)
+      function renderMenu() {
+        grid.innerHTML = '';
+        
+        const availableItems = getAvailableMenuItems().filter(item => {
+          if (currentCategory === 'all') return true;
+          return item.category === currentCategory;
+        });
+
+        if (availableItems.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--c-roast);">
+              <p style="font-size: 1.2rem; font-weight: 600;">No items currently available in this category.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const cart = CartManager.getCart();
+
+        availableItems.forEach(item => {
+          const qtyInCart = cart[item.id] || 0;
+          const card = document.createElement('div');
+          card.className = 'food-card';
+          card.id = `card-${item.id}`;
+
+          const isLowStock = item.availableCount <= 5;
+
+          card.innerHTML = `
+            <div class="food-card-media">
+              <img src="${item.image}" alt="${item.name}" class="food-card-img" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80'">
+              ${item.badge ? `<span class="food-badge">${item.badge}</span>` : ''}
+              <span class="stock-pill ${isLowStock ? 'low-stock' : ''}">
+                Available: ${item.availableCount}
+              </span>
+            </div>
+            <div class="food-card-body">
+              <div class="food-card-header">
+                <h3 class="food-name">${item.name}</h3>
+                <span class="food-price">₹${item.price}</span>
+              </div>
+              <p class="food-desc">${item.description}</p>
+              
+              <div class="card-actions" id="actions-${item.id}">
+                ${qtyInCart === 0 ? `
+                  <button class="btn-add-cart" onclick="handleAddToCart('${item.id}')" aria-label="Add ${item.name} to cart">
+                    <span>Add to Cart</span>
+                    <span style="font-size: 1.2rem;">+</span>
+                  </button>
+                ` : `
+                  <div class="card-qty-controller">
+                    <button class="qty-btn" onclick="handleDecrement('${item.id}')" aria-label="Decrease quantity of ${item.name}">−</button>
+                    <span class="qty-number">${qtyInCart}</span>
+                    <button class="qty-btn" onclick="handleAddToCart('${item.id}')" ${qtyInCart >= item.availableCount ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''} aria-label="Increase quantity of ${item.name}">+</button>
+                    <button class="btn-cancel-item" onclick="handleRemoveFromCart('${item.id}')" title="Cancel this item from cart">Cancel</button>
+                  </div>
+                `}
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      // 3. CART ACTIONS
+      window.handleAddToCart = (itemId) => {
+        const result = CartManager.addItem(itemId);
+        if (!result.success && result.message) {
+          alert(result.message);
+        }
+        updateCartBadge();
+        renderMenu();
+      };
+
+      window.handleDecrement = (itemId) => {
+        CartManager.decrementItem(itemId);
+        updateCartBadge();
+        renderMenu();
+      };
+
+      window.handleRemoveFromCart = (itemId) => {
+        CartManager.removeItem(itemId);
+        updateCartBadge();
+        renderMenu();
+      };
+
+      // 4. UPDATE BOTTOM-RIGHT "YOUR CART" BUTTON
+      function updateCartBadge() {
+        const summary = CartManager.getCartSummary();
+        cartCountEl.textContent = summary.totalItems;
+        cartPriceEl.textContent = `₹${summary.totalPrice}`;
+        const cartBtn = document.getElementById('floating-cart-btn');
+        if (summary.totalItems === 0) {
+          cartBtn.style.opacity = '0.85';
+        } else {
+          cartBtn.style.opacity = '1';
+        }
+      }
+
+      // Category tab filtering
+      filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          filterTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentCategory = tab.dataset.category;
+          renderMenu();
+        });
+      });
+
+      fetchMenuFromJavaBackend().then(() => {
+  renderMenu();
+  updateCartBadge();
+});
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+package com.cafeteria.dto.request; import com.cafeteria.entity.enums.PaymentMethod; import java.util.List; public record PlaceOrderRequest(List<OrderLineRequest> items,PaymentMethod paymentMethod,String notes){}

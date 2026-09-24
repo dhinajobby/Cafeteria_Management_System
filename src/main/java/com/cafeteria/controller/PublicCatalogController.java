@@ -1,0 +1,3 @@
+package com.cafeteria.controller;
+import com.cafeteria.dto.response.*; import com.cafeteria.service.*; import org.springframework.web.bind.annotation.*; import java.util.List;
+@RestController @RequestMapping("/api/catalog") public class PublicCatalogController{private final CategoryService cats;private final MenuItemService items;public PublicCatalogController(CategoryService c,MenuItemService i){cats=c;items=i;}@GetMapping("/categories")public List<CategoryResponse> categories(){return cats.getActiveCategories();}@GetMapping("/items")public List<MenuItemResponse> items(){return items.getAvailableItems();}@GetMapping("/categories/{id}/items")public List<MenuItemResponse> itemsByCategory(@PathVariable Long id){return items.getAvailableItemsByCategory(id);}}

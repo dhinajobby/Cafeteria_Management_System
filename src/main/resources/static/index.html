@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annapurna - Welcome to Campus Cafeteria</title>
+  <meta name="description" content="Welcome to the Annapurna campus cafeteria touch kiosk. Fresh brews, bakery treats, and quick meals.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Antigravity Canvas Particle Animation -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <div class="page-wrapper">
+    
+    <!-- Top Utility Bar: Station Status & Admin Login Access -->
+    <div class="welcome-top-bar">
+      <div class="top-status-indicator">
+        <span class="status-dot"></span>
+        <span>Station #01 &bull; Touch Kiosk Online</span>
+      </div>
+      
+      <!-- Admin Login Option at Top of Welcome Page -->
+      <a href="login.html" class="btn-top-admin-login" id="top-admin-login-link" title="Cafeteria Staff &amp; Administrator Portal">
+        <span>🔐</span>
+        <span>Admin Login</span>
+      </a>
+    </div>
+
+    <div class="welcome-container">
+      
+      <!-- Center Trademark Header -->
+      <header class="welcome-trademark-header">
+        <div class="trademark-badge">
+          <span>☕</span>
+          <span>College Cafeteria Kiosk</span>
+        </div>
+        <h1 class="trademark-title">ANNAPURNA<sup>&trade;</sup></h1>
+        <p class="trademark-subtitle">Fresh Brews &bull; Warm Treats &bull; Instant Service</p>
+      </header>
+
+      <!-- Center Minimalist Hero Card -->
+      <main class="welcome-hero" role="main">
+        <span class="hero-tag">Welcome to Your Daily Fuel Stop</span>
+        <h2 class="hero-heading">Craving Great Coffee &amp; Quick Bites?</h2>
+        <p class="hero-desc">
+          Browse our live food menu, customize your selection with zero waiting lines, and receive your printed bill instantly.
+        </p>
+
+        <!-- "Ready to order!" Button (Leads to Page 2: menu.html) -->
+        <a href="menu.html" class="btn-ready-order" id="ready-order-btn" aria-label="Ready to order! Proceed to menu screen">
+          <span>Ready to order!</span>
+          <span style="font-size: 1.4rem;" aria-hidden="true">&rarr;</span>
+        </a>
+      </main>
+
+      <!-- Bottom Status & Touch Indicator -->
+      <footer class="welcome-footer">
+        <span class="kiosk-pill">📍 Campus Cafeteria Station #01</span>
+        <span>&bull;</span>
+        <span class="kiosk-pill">✨ Touch Screen Enabled</span>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/particles.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // If admin is already logged in, update top link to point directly to dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      const adminLink = document.getElementById('top-admin-login-link');
+      if (adminLink && typeof AuthManager !== 'undefined' && AuthManager.isLoggedIn()) {
+        adminLink.innerHTML = '<span>👑</span><span>Admin Dashboard</span>';
+        adminLink.href = 'admin.html';
+        adminLink.classList.add('logged-in');
+      }
+    });
+  </script>
+</body>
+</html>

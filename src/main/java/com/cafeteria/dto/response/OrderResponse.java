@@ -1,0 +1,1 @@
+package com.cafeteria.dto.response; import com.cafeteria.entity.enums.*; import java.math.BigDecimal; import java.time.LocalDate; import java.util.List; public record OrderResponse(Long orderId,Integer tokenNumber,LocalDate orderDate,OrderStatus orderStatus,PaymentStatus paymentStatus,PaymentMethod paymentMethod,BigDecimal totalAmount,String notes,List<OrderItemResponse> items){}

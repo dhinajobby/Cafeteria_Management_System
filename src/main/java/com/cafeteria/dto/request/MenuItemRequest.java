@@ -1,0 +1,1 @@
+package com.cafeteria.dto.request; import java.math.BigDecimal; public record MenuItemRequest(Long categoryId,String name,String description,BigDecimal price,String imageUrl,Boolean isAvailable,Integer stockQuantity){}

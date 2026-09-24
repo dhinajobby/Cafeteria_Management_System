@@ -1,0 +1,1 @@
+package com.cafeteria.dto.response; import java.math.BigDecimal; import java.time.LocalDate; import java.util.List; public record DailySalesReportResponse(LocalDate reportDate,List<DailySalesItemResponse> items,BigDecimal totalSoldAmount){}

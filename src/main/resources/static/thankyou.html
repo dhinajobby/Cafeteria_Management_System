@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annapurna&trade; - Thank You!</title>
+  <meta name="description" content="Thank you for ordering at Annapurna Cafeteria. Your order token is ready.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Antigravity Canvas Particle Animation (Same as Page 1) -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <div class="page-wrapper">
+    <div class="thankyou-container">
+      
+      <!-- Thank You Card -->
+      <main class="thankyou-card" role="main">
+        
+        <!-- Animated Success Icon -->
+        <div class="success-icon-circle" aria-hidden="true">
+          <span>✓</span>
+        </div>
+
+        <h1 class="thankyou-title">Thank You!</h1>
+        <p style="font-size: 1.15rem; font-weight: 600; color: var(--c-mocha);">
+          Your order has been sent to the cafeteria kitchen.
+        </p>
+
+        <!-- Order Token Banner -->
+        <div class="order-token-banner">
+          <div class="token-label">Your Order Token</div>
+          <div class="token-value" id="order-token-display">#AP-101</div>
+        </div>
+
+        <p class="thankyou-desc">
+          Your receipt is being printed. Please collect your freshly prepared meal at the counter when your token number is announced.
+        </p>
+
+        <!-- 5-Second Animated Countdown to Page 1 (index.html) -->
+        <div class="countdown-box">
+          <div class="countdown-bar-wrapper">
+            <div class="countdown-bar" id="countdown-progress"></div>
+          </div>
+          <div class="countdown-text">
+            Returning to welcome screen in <span class="countdown-number" id="countdown-timer">5</span> seconds...
+          </div>
+          <a href="index.html" class="btn-return-now" id="return-now-btn">
+            Return to Start Now
+          </a>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/particles.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tokenDisplay = document.getElementById('order-token-display');
+      const timerDisplay = document.getElementById('countdown-timer');
+
+      // Retrieve recent order token
+      const lastOrder = CartManager.getLastOrder();
+      if (lastOrder && lastOrder.token) {
+        tokenDisplay.textContent = '#' + lastOrder.token;
+      } else {
+        tokenDisplay.textContent = '#AP-' + Math.floor(100 + Math.random() * 900);
+      }
+
+      // 4. AUTOMATIC TRANSITION TO PAGE 1 AFTER 5 SECONDS
+      let secondsLeft = 5;
+      const interval = setInterval(() => {
+        secondsLeft -= 1;
+        if (secondsLeft >= 0) {
+          timerDisplay.textContent = secondsLeft;
+        }
+        if (secondsLeft <= 0) {
+          clearInterval(interval);
+          window.location.href = 'index.html';
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

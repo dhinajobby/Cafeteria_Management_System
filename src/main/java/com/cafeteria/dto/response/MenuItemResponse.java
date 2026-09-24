@@ -1,0 +1,1 @@
+package com.cafeteria.dto.response; import java.math.BigDecimal; public record MenuItemResponse(Long itemId,Long categoryId,String categoryName,String name,String description,BigDecimal price,String imageUrl,Boolean isAvailable,Integer stockQuantity){}
